@@ -1,0 +1,164 @@
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
+
+static_resources:
+  listeners:
+  - name: main
+    address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 8080
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: ingress_http
+          codec_type: AUTO
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: graphql_federation
+              domains: ["*"]
+              routes:
+              - match:
+                  prefix: "/graphql"
+                route:
+                  cluster: graphql_federation
+              - match:
+                  prefix: "/"
+                direct_response:
+                  status: 404
+                  body:
+                    inline_string: "GraphQL Federation Gateway - Use /graphql endpoint"
+          http_filters:
+          - name: envoy.filters.http.wasm
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+              config:
+                name: "graphql_federation"
+                root_id: "graphql_federation"
+                vm_config:
+                  vm_id: "graphql_federation"
+                  runtime: "envoy.wasm.runtime.v8"
+                  code:
+                    local:
+                      inline_string: "[BASE64_ENCODED_WASM_BINARY]"
+                configuration:
+                  "@type": type.googleapis.com/google.protobuf.StringValue
+                  value: |
+                    {
+                      "services": [
+                        {
+                          "name": "users",
+                          "endpoint": "http://users-service:4000/graphql",
+                          "timeout": "5s",
+                          "weight": 1,
+                          "schema": "type User { id: ID! name: String! email: String! } type Query { user(id: ID!): User users: [User!]! }",
+                          "healthCheck": {
+                            "enabled": true,
+                            "interval": "30s",
+                            "timeout": "5s",
+                            "path": "/health"
+                          }
+                        },
+                        {
+                          "name": "products",
+                          "endpoint": "http://products-service:4000/graphql",
+                          "timeout": "5s",
+                          "weight": 1,
+                          "schema": "type Product { id: ID! name: String! price: Float! userId: ID! } type Query { product(id: ID!): Product products: [Product!]! }",
+                          "healthCheck": {
+                            "enabled": true,
+                            "interval": "30s",
+                            "timeout": "5s",
+                            "path": "/health"
+                          }
+                        },
+                        {
+                          "name": "orders",
+                          "endpoint": "http://orders-service:4000/graphql",
+                          "timeout": "5s",
+                          "weight": 1,
+                          "schema": "type Order { id: ID! userId: ID! productIds: [ID!]! total: Float! status: String! } type Query { order(id: ID!): Order ordersByUser(userId: ID!): [Order!]! }",
+                          "healthCheck": {
+                            "enabled": true,
+                            "interval": "30s",
+                            "timeout": "5s",
+                            "path": "/health"
+                          }
+                        }
+                      ],
+                      "federation": {
+                        "enableQueryPlanning": true,
+                        "enableCaching": true,
+                        "maxQueryDepth": 10,
+                        "queryTimeout": "30s",
+                        "enableIntrospection": true,
+                        "debugMode": false
+                      }
+                    }
+          - name: envoy.filters.http.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+  - name: graphql_federation
+    connect_timeout: 0.25s
+    type: STATIC
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: graphql_federation
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: 127.0.0.1
+                port_value: 8080
+
+  # Backend GraphQL services
+  - name: users-service
+    connect_timeout: 0.25s
+    type: STRICT_DNS
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: users-service
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: users-service
+                port_value: 4000
+
+  - name: products-service
+    connect_timeout: 0.25s
+    type: STRICT_DNS
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: products-service
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: products-service
+                port_value: 4000
+
+  - name: orders-service
+    connect_timeout: 0.25s
+    type: STRICT_DNS
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: orders-service
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: orders-service
+                port_value: 4000

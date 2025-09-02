@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # Envoy Proxy with GraphQL Federation WASM Extension
+  envoy:
+    image: envoyproxy/envoy:v1.28-latest
+    ports:
+      - "8080:8080"  # GraphQL Federation Gateway
+      - "9901:9901"  # Envoy Admin Interface
+    volumes:
+      - ./examples/envoy.yaml:/etc/envoy/envoy.yaml:ro
+      - ./build/envoy-wasm-graphql-federation.wasm:/etc/envoy/wasm/graphql-federation.wasm:ro
+    command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml --log-level info
+    depends_on:
+      - users-service
+      - products-service
+      - orders-service
+    networks:
+      - federation-network
+
+  # Mock GraphQL Services for testing
+  users-service:
+    image: node:18-alpine
+    ports:
+      - "4001:4000"
+    working_dir: /app
+    volumes:
+      - ./examples/mock-services/users:/app:ro
+    command: sh -c "npm install && npm start"
+    environment:
+      - PORT=4000
+      - SERVICE_NAME=users
+    networks:
+      - federation-network
+
+  products-service:
+    image: node:18-alpine
+    ports:
+      - "4002:4000"
+    working_dir: /app
+    volumes:
+      - ./examples/mock-services/products:/app:ro
+    command: sh -c "npm install && npm start"
+    environment:
+      - PORT=4000
+      - SERVICE_NAME=products
+    networks:
+      - federation-network
+
+  orders-service:
+    image: node:18-alpine
+    ports:
+      - "4003:4000"
+    working_dir: /app
+    volumes:
+      - ./examples/mock-services/orders:/app:ro
+    command: sh -c "npm install && npm start"
+    environment:
+      - PORT=4000
+      - SERVICE_NAME=orders
+    networks:
+      - federation-network
+
+  # GraphQL Playground for testing
+  graphql-playground:
+    image: graphql/playground:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_GRAPHQL_ENDPOINT=http://localhost:8080/graphql
+    networks:
+      - federation-network
+
+networks:
+  federation-network:
+    driver: bridge
+
+volumes:
+  wasm-cache:
+    driver: local

@@ -1,0 +1,63 @@
+{
+  "services": [
+    {
+      "name": "users",
+      "endpoint": "http://localhost:4001/graphql",
+      "timeout": "5s",
+      "weight": 1,
+      "schema": "type User { id: ID! name: String! email: String! } type Query { user(id: ID!): User users: [User!]! }",
+      "headers": {
+        "Content-Type": "application/json",
+        "User-Agent": "GraphQL-Federation-Gateway/1.0"
+      },
+      "healthCheck": {
+        "enabled": true,
+        "interval": "30s",
+        "timeout": "5s",
+        "path": "/health"
+      }
+    },
+    {
+      "name": "products",
+      "endpoint": "http://localhost:4002/graphql",
+      "timeout": "5s",
+      "weight": 1,
+      "schema": "type Product { id: ID! name: String! price: Float! description: String userId: ID! } type Query { product(id: ID!): Product products: [Product!]! productsByUser(userId: ID!): [Product!]! }",
+      "headers": {
+        "Content-Type": "application/json",
+        "User-Agent": "GraphQL-Federation-Gateway/1.0"
+      },
+      "healthCheck": {
+        "enabled": true,
+        "interval": "30s",
+        "timeout": "5s",
+        "path": "/health"
+      }
+    },
+    {
+      "name": "orders",
+      "endpoint": "http://localhost:4003/graphql",
+      "timeout": "5s",
+      "weight": 1,
+      "schema": "type Order { id: ID! userId: ID! productIds: [ID!]! total: Float! status: OrderStatus! createdAt: String! } enum OrderStatus { PENDING CONFIRMED SHIPPED DELIVERED CANCELLED } type Query { order(id: ID!): Order ordersByUser(userId: ID!): [Order!]! }",
+      "headers": {
+        "Content-Type": "application/json",
+        "User-Agent": "GraphQL-Federation-Gateway/1.0"
+      },
+      "healthCheck": {
+        "enabled": true,
+        "interval": "30s",
+        "timeout": "5s",
+        "path": "/health"
+      }
+    }
+  ],
+  "federation": {
+    "enableQueryPlanning": true,
+    "enableCaching": true,
+    "maxQueryDepth": 15,
+    "queryTimeout": "30s",
+    "enableIntrospection": true,
+    "debugMode": false
+  }
+}
