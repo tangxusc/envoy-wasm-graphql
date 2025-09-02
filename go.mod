@@ -3,7 +3,7 @@ module envoy-wasm-graphql-federation
 go 1.19
 
 require (
-	github.com/tetratelabs/proxy-wasm-go-sdk v0.22.0
+	github.com/tetratelabs/proxy-wasm-go-sdk v0.24.0
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	github.com/wundergraph/graphql-go-tools v1.67.4
