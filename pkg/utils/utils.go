@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm"
+	"github.com/proxy-wasm/proxy-wasm-go-sdk/proxywasm"
 
 	federationtypes "envoy-wasm-graphql-federation/pkg/types"
 )

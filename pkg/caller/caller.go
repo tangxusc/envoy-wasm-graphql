@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm"
+	"github.com/proxy-wasm/proxy-wasm-go-sdk/proxywasm"
 
 	"envoy-wasm-graphql-federation/pkg/errors"
 	federationtypes "envoy-wasm-graphql-federation/pkg/types"

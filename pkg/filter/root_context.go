@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm"
-	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm/types"
+	"github.com/proxy-wasm/proxy-wasm-go-sdk/proxywasm"
+	"github.com/proxy-wasm/proxy-wasm-go-sdk/proxywasm/types"
 
 	"envoy-wasm-graphql-federation/pkg/config"
 	"envoy-wasm-graphql-federation/pkg/federation"
