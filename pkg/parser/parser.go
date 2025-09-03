@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wundergraph/graphql-go-tools/pkg/ast"
-	"github.com/wundergraph/graphql-go-tools/pkg/astparser"
-	"github.com/wundergraph/graphql-go-tools/pkg/astvalidation"
-	"github.com/wundergraph/graphql-go-tools/pkg/operationreport"
+	"github.com/wundergraph/graphql-go-tools/v2/pkg/ast"
+	"github.com/wundergraph/graphql-go-tools/v2/pkg/astparser"
+	"github.com/wundergraph/graphql-go-tools/v2/pkg/astvalidation"
+	"github.com/wundergraph/graphql-go-tools/v2/pkg/operationreport"
 
 	"envoy-wasm-graphql-federation/pkg/errors"
 	federationtypes "envoy-wasm-graphql-federation/pkg/types"

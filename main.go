@@ -25,6 +25,6 @@ func main() {
 	fmt.Println("    -d '{\"query\": \"{ users { id name } }\"}'")
 	fmt.Println("")
 	fmt.Println("For more information, see README.md")
-	
+
 	log.Println("Note: The actual WASM entry point is in cmd/wasm/main.go")
 }

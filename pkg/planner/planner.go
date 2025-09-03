@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wundergraph/graphql-go-tools/pkg/ast"
+	"github.com/wundergraph/graphql-go-tools/v2/pkg/ast"
 
 	"envoy-wasm-graphql-federation/pkg/errors"
 	federationtypes "envoy-wasm-graphql-federation/pkg/types"

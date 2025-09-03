@@ -153,7 +153,7 @@ func (c *WASMCaller) CallBatch(ctx context.Context, calls []*federationtypes.Ser
 		response *federationtypes.ServiceResponse
 		err      error
 	}
-	
+
 	resultChan := make(chan callResult, len(calls))
 	responses := make([]*federationtypes.ServiceResponse, len(calls))
 
@@ -165,7 +165,7 @@ func (c *WASMCaller) CallBatch(ctx context.Context, calls []*federationtypes.Ser
 			defer wg.Done()
 
 			resp, err := c.Call(ctx, serviceCall)
-			
+
 			// 通过channel发送结果
 			select {
 			case resultChan <- callResult{index: idx, response: resp, err: err}:
@@ -187,8 +187,8 @@ func (c *WASMCaller) CallBatch(ctx context.Context, calls []*federationtypes.Ser
 	for result := range resultChan {
 		if result.err != nil {
 			callErrors = append(callErrors, fmt.Errorf("call %d failed: %v", result.index, result.err))
-			c.logger.Error("Batch call failed", 
-				"index", result.index, 
+			c.logger.Error("Batch call failed",
+				"index", result.index,
 				"error", result.err)
 		} else {
 			responses[result.index] = result.response
@@ -318,10 +318,10 @@ func (c *WASMCaller) makeWASMHTTPCall(clusterName string, requestBody []byte, he
 	// 由于proxy-wasm的HTTP调用是异步的，我们使用channel进行同步等待
 	// 通过handler的Wait方法等待响应，该方法使用channel实现异步通信
 	response, err := handler.Wait(call.Service.Timeout)
-	
+
 	// 清理资源
 	defer handler.Close()
-	
+
 	if err != nil {
 		c.recordFailure()
 		proxywasm.LogErrorf("HTTP call failed, calloutID=%d, error=%v", calloutID, err)
@@ -362,15 +362,15 @@ func NewWASMHTTPCallHandler(calloutID uint32) *WASMHTTPCallHandler {
 func (h *WASMHTTPCallHandler) OnHttpCallResponse(numHeaders, bodySize, numTrailers int) {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
-	
+
 	// 防止重复处理
 	if h.processed {
 		proxywasm.LogWarnf("HTTP response already processed for calloutID: %d", h.calloutID)
 		return
 	}
 	h.processed = true
-	
-	proxywasm.LogDebugf("Received HTTP response: headers=%d, bodySize=%d, trailers=%d, calloutID=%d", 
+
+	proxywasm.LogDebugf("Received HTTP response: headers=%d, bodySize=%d, trailers=%d, calloutID=%d",
 		numHeaders, bodySize, numTrailers, h.calloutID)
 
 	// 获取响应头
@@ -406,10 +406,10 @@ func (h *WASMHTTPCallHandler) OnHttpCallResponse(numHeaders, bodySize, numTraile
 	response := &federationtypes.ServiceResponse{
 		Headers: headerMap,
 		Metadata: map[string]interface{}{
-			"status_code": status,
-			"callout_id":  h.calloutID,
-			"body_size":   bodySize,
-			"headers_count": numHeaders,
+			"status_code":    status,
+			"callout_id":     h.calloutID,
+			"body_size":      bodySize,
+			"headers_count":  numHeaders,
 			"trailers_count": numTrailers,
 		},
 	}
@@ -466,17 +466,17 @@ func (h *WASMHTTPCallHandler) sendError(err error) {
 // Wait 通过channel等待响应完成
 func (h *WASMHTTPCallHandler) Wait(timeout time.Duration) (*federationtypes.ServiceResponse, error) {
 	proxywasm.LogDebugf("Waiting for HTTP response via channel, calloutID=%d, timeout=%v", h.calloutID, timeout)
-	
+
 	// 使用select语句同时等待响应、错误和超时
 	select {
 	case response := <-h.responseChan:
 		proxywasm.LogDebugf("Received response via channel, calloutID=%d", h.calloutID)
 		return response, nil
-		
+
 	case err := <-h.errorChan:
 		proxywasm.LogErrorf("Received error via channel, calloutID=%d, error=%v", h.calloutID, err)
 		return nil, err
-		
+
 	case <-time.After(timeout):
 		proxywasm.LogErrorf("HTTP call timeout after %v, calloutID=%d", timeout, h.calloutID)
 		return nil, fmt.Errorf("HTTP call timeout after %v for calloutID %d", timeout, h.calloutID)
@@ -487,20 +487,20 @@ func (h *WASMHTTPCallHandler) Wait(timeout time.Duration) (*federationtypes.Serv
 func (h *WASMHTTPCallHandler) Close() {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
-	
+
 	// 关闭channel防止内存泄漏
 	select {
 	case <-h.responseChan:
 	default:
 		close(h.responseChan)
 	}
-	
+
 	select {
 	case <-h.errorChan:
 	default:
 		close(h.errorChan)
 	}
-	
+
 	proxywasm.LogDebugf("HTTP call handler closed, calloutID=%d", h.calloutID)
 }
 

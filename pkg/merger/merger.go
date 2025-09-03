@@ -100,6 +100,13 @@ func (m *ResponseMerger) MergeResponses(ctx context.Context, responses []*federa
 		}, nil
 	}
 
+	// 如果 plan 为 nil，创建一个默认的计划
+	if plan == nil {
+		plan = &federationtypes.ExecutionPlan{
+			MergeStrategy: federationtypes.MergeStrategyShallow,
+		}
+	}
+
 	m.logger.Debug("Merging responses",
 		"responseCount", len(responses),
 		"strategy", plan.MergeStrategy,
