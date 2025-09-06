@@ -44,9 +44,11 @@ static_resources:
                 vm_config:
                   vm_id: "graphql_federation"
                   runtime: "envoy.wasm.runtime.v8"
+                  # runtime: "envoy.wasm.runtime.wamr"
                   code:
                     local:
-                      inline_string: "[BASE64_ENCODED_WASM_BINARY]"
+                      filename: "build/test.wasm"
+                      # filename: "build/test-tiny.wasm"
                 configuration:
                   "@type": type.googleapis.com/google.protobuf.StringValue
                   value: |
